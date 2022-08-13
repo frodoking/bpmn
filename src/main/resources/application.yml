@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    host: 124.70.188.180
+    port: 3306
+    name: bpmn
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 30
+      auto-commit: true
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  activiti:
+    database-schema-update: true
+    # 开启历史库
+    db-history-used: true
+    history-level: audit
+
+activiti:
+  security:
+    policies:
+      - name: 'My Policy'
+        groups: developers, activitiTeam
+        users: bob, hannah, elias, garth, zsan, lsi, wwu
+        access: WRITE
+        serviceName: application
+        keys: Process_1
+      - name: 'Other Policy'
+        groups: finance, doctor
+        users: bob, hannah, elias, garth, zsan, lsi, wwu
+        access: READ
+        serviceName: application
+        keys: '*'
+logging:
+  level:
+    org.activiti: DEBUG
