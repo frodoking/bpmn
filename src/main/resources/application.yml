@@ -1,10 +1,10 @@
 spring:
   datasource:
-    host: 124.70.188.180
+    host: 192.168.3.3
     port: 3306
-    name: bpmn
+    name: activiti
     username: root
-    password: 123456
+    password: Asd@1234
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     type: com.zaxxer.hikari.HikariDataSource
@@ -21,8 +21,9 @@ spring:
     # 开启历史库
     db-history-used: true
     history-level: audit
+    check-process-definitions: false
+    deployment-mode: never-fail
 
-activiti:
   security:
     policies:
       - name: 'My Policy'

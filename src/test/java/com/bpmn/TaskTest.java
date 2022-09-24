@@ -8,6 +8,7 @@ import org.activiti.api.task.model.Task;
 import org.activiti.api.task.model.builders.TaskPayloadBuilder;
 import org.activiti.api.task.model.payloads.ClaimTaskPayload;
 import org.activiti.api.task.runtime.TaskRuntime;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -44,10 +47,10 @@ public class TaskTest {
      * 认领Task
      */
     @Test
-    @WithUserDetails(value = "zsan", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void claimTask() {
         ClaimTaskPayload claimTaskPayload = new ClaimTaskPayload();
-        claimTaskPayload.setTaskId("4acb3a06-1964-11ed-a5d9-d6a488707b26");
+        claimTaskPayload.setTaskId("782469ed-3bcd-11ed-ab41-f6335fb4fb12");
         Task task = taskRuntime.claim(claimTaskPayload);
         logger.info("Task >> {}", task);
     }
@@ -65,49 +68,4 @@ public class TaskTest {
         taskRuntime.complete(TaskPayloadBuilder.complete().withTaskId(taskPage.getContent().get(0).getId()).build());
     }
 
-
-
-    /**
-     * 查询用户的任务列表
-     */
-    @Test
-    public void taskQuery() {
-        //根据流程定义的key,负责人assignee来实现当前用户的任务列表查询
-        Page<Task> list = taskRuntime.tasks(Pageable.of(0,10));
-
-        if (list != null && list.getTotalItems() > 0) {
-            for (Task task : list.getContent()) {
-                System.out.println("任务ID:" + task.getId());
-                System.out.println("任务名称:" + task.getName());
-                System.out.println("任务的创建时间:" + task.getCreatedDate());
-                System.out.println("任务的办理人:" + task.getAssignee());
-                System.out.println("流程实例ID：" + task.getProcessInstanceId());
-                System.out.println("执行对象ID:" + task.getAssignee());
-                System.out.println("流程定义ID:" + task.getProcessDefinitionId());
-                System.out.println("getOwner:" + task.getOwner());
-                System.out.println("getDescription:" + task.getDescription());
-                System.out.println("getFormKey:" + task.getFormKey());
-            }
-        }
-    }
-
-    /**
-     * 历史活动实例查询
-     */
-//    @Test
-//    public void queryHistoryTask() {
-//        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery() // 创建历史活动实例查询
-//                .processInstanceId("9671cdea-3367-11ea-a057-30b49ec7161f") // 执行流程实例id
-//                .orderByTaskCreateTime()
-//                .asc()
-//                .list();
-//        for (HistoricTaskInstance hai : list) {
-//            System.out.println("活动ID:" + hai.getId());
-//            System.out.println("流程实例ID:" + hai.getProcessInstanceId());
-//            System.out.println("活动名称：" + hai.getName());
-//            System.out.println("办理人：" + hai.getAssignee());
-//            System.out.println("开始时间：" + hai.getStartTime());
-//            System.out.println("结束时间：" + hai.getEndTime());
-//        }
-//    }
 }

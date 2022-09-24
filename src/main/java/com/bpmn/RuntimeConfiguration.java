@@ -1,5 +1,9 @@
 package com.bpmn;
 
+import org.activiti.api.task.runtime.events.TaskAssignedEvent;
+import org.activiti.api.task.runtime.events.TaskCompletedEvent;
+import org.activiti.api.task.runtime.events.listener.TaskCandidateEventListener;
+import org.activiti.api.task.runtime.events.listener.TaskRuntimeEventListener;
 import org.activiti.core.common.spring.identity.ExtendedInMemoryUserDetailsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,22 +24,18 @@ import static java.util.Arrays.asList;
 @Configuration
 public class RuntimeConfiguration {
 
-    private  Logger logger = LoggerFactory.getLogger(RuntimeConfiguration.class);
+    private final Logger logger = LoggerFactory.getLogger(RuntimeConfiguration.class);
 
     @Bean
     public UserDetailsService userDetailsService() {
         ExtendedInMemoryUserDetailsManager extendedInMemoryUserDetailsManager = new ExtendedInMemoryUserDetailsManager();
 
         String[][] usersGroupsAndRoles = {
-                {"bob", "password", "ROLE_ACTIVITI_USER", "GROUP_activitiTeam", "GROUP_developers"},
-                {"john", "password", "ROLE_ACTIVITI_USER", "GROUP_activitiTeam"},
-                {"hannah", "password", "ROLE_ACTIVITI_USER", "GROUP_activitiTeam"},
-                {"other", "password", "ROLE_ACTIVITI_USER", "GROUP_otherTeam"},
-                {"system", "password", "ROLE_ACTIVITI_USER"},
-                {"admin", "password", "ROLE_ACTIVITI_ADMIN"},
-                {"zsan", "password", "ROLE_ACTIVITI_USER", "GROUP_activitiTeam", "GROUP_developers"},
-                {"lsi", "password", "ROLE_ACTIVITI_USER", "GROUP_activitiTeam", "GROUP_developers"},
-                {"wwu", "password", "ROLE_ACTIVITI_USER", "GROUP_activitiTeam", "GROUP_developers"},
+                {"admin", "password", "ROLE_ACTIVITI_ADMIN", "GROUP_developers"},
+                {"system", "password", "ROLE_ACTIVITI_USER", "GROUP_developers"},
+                {"zsan", "password", "ROLE_ACTIVITI_USER", "GROUP_developers"},
+                {"lsi", "password", "ROLE_ACTIVITI_USER", "GROUP_developers"},
+                {"wwu", "password", "ROLE_ACTIVITI_USER", "GROUP_developers"},
         };
 
         for (String[] user : usersGroupsAndRoles) {
@@ -51,5 +51,19 @@ public class RuntimeConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public TaskRuntimeEventListener<TaskAssignedEvent> taskAssignedListener() {
+        return taskAssigned -> logger.info(">>> Task Assigned: '"
+                + taskAssigned.getEntity().getName() +
+                "' We can send a notification to the assginee: " + taskAssigned.getEntity().getAssignee());
+    }
+
+    @Bean
+    public TaskRuntimeEventListener<TaskCompletedEvent> taskCompletedListener() {
+        return taskCompleted -> logger.info(">>> Task Completed: '"
+                + taskCompleted.getEntity().getName() +
+                "' We can send a notification to the owner: " + taskCompleted.getEntity().getOwner());
     }
 }

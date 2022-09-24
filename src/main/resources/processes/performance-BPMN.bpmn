@@ -53,7 +53,7 @@
       <bpmn:incoming>Flow_1hr7zeg</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1hr7zeg" sourceRef="Activity_0lzmb9x" targetRef="Event_1s6zo51" />
-    <bpmn:userTask id="Activity_13lhtp7" name="Task 4" camunda:assignee="lili">
+    <bpmn:userTask id="Activity_13lhtp7" name="Task 4" camunda:assignee="system">
       <bpmn:incoming>Flow_0basfpl</bpmn:incoming>
       <bpmn:outgoing>Flow_00b46mk</bpmn:outgoing>
     </bpmn:userTask>

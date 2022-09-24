@@ -33,14 +33,14 @@ public class ProcessTest {
     private ProcessRuntime processRuntime;
 
     @Test // 查看流程
-    @WithUserDetails(value = "bob", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void getProcessDefinitionMeta() {
-        ProcessDefinitionMeta processDefinitionMeta = processRuntime.processDefinitionMeta("Process_1:1:1a27ff99-1881-11ed-bf14-0e8e9d850b1d");
+        ProcessDefinitionMeta processDefinitionMeta = processRuntime.processDefinitionMeta("Process_1:4:e3cb3117-3bbf-11ed-9380-f6335fb4fb12");
         logger.info("流程定义：{}" , gson.toJson(processDefinitionMeta));
     }
 
     @Test // 查看流程
-    @WithUserDetails(value = "bob", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void getProcessDefinitions() {
         Page<ProcessDefinition> processDefinitionPage = processRuntime.processDefinitions(Pageable.of(0, 10));
         System.err.println("已部署的流程个数：" + processDefinitionPage.getTotalItems());
@@ -50,7 +50,7 @@ public class ProcessTest {
     }
 
     @Test // 启动流程
-    @WithUserDetails(value = "zsan", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void startInstance() {
         Content content = pickRandomString();
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yy HH:mm:ss");
@@ -65,7 +65,7 @@ public class ProcessTest {
     }
 
     @Test // 获取启动的流程
-    @WithUserDetails(value = "zsan", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void getInstance() {
         Page<ProcessInstance> processInstancePage = processRuntime.processInstances(Pageable.of(0, 10));
         logger.info("已启动的流程个数：{}", processInstancePage.getTotalItems());
