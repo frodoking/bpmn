@@ -1,7 +1,7 @@
 spring:
   datasource:
-    host: 192.168.3.3
-    port: 3306
+    host: bj-cynosdbmysql-grp-5dvrc4s6.sql.tencentcdb.com
+    port: 28168
     name: activiti
     username: root
     password: Asd@1234
