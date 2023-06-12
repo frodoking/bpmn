@@ -47,10 +47,10 @@ public class TaskTest {
      * 认领Task
      */
     @Test
-    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "zsan", userDetailsServiceBeanName = "userDetailsService")
     public void claimTask() {
         ClaimTaskPayload claimTaskPayload = new ClaimTaskPayload();
-        claimTaskPayload.setTaskId("782469ed-3bcd-11ed-ab41-f6335fb4fb12");
+        claimTaskPayload.setTaskId("e2706fa8-fa15-11ed-af95-a85e455df905");
         Task task = taskRuntime.claim(claimTaskPayload);
         logger.info("Task >> {}", task);
     }
@@ -59,13 +59,13 @@ public class TaskTest {
      * 启动一个实例
      */
     @Test
-    @WithUserDetails(value = "bob", userDetailsServiceBeanName = "userDetailsService")
+    @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void startProcessInstance() {
         Page<Task> taskPage = taskRuntime.tasks(Pageable.of(0,10));
         System.out.println("Number of process definitions : " + taskPage.getTotalItems());
         System.out.println("Number of tasks : " +  taskPage.getTotalItems());
-        taskRuntime.claim(TaskPayloadBuilder.claim().withTaskId(taskPage.getContent().get(0).getId()).build());
-        taskRuntime.complete(TaskPayloadBuilder.complete().withTaskId(taskPage.getContent().get(0).getId()).build());
+        //taskRuntime.claim(TaskPayloadBuilder.claim().withTaskId(taskPage.getContent().get(0).getId()).build());
+        //taskRuntime.complete(TaskPayloadBuilder.complete().withTaskId(taskPage.getContent().get(0).getId()).build());
     }
 
 }

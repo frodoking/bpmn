@@ -35,7 +35,7 @@ public class ProcessTest {
     @Test // 查看流程
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void getProcessDefinitionMeta() {
-        ProcessDefinitionMeta processDefinitionMeta = processRuntime.processDefinitionMeta("Process_1:4:e3cb3117-3bbf-11ed-9380-f6335fb4fb12");
+        ProcessDefinitionMeta processDefinitionMeta = processRuntime.processDefinitionMeta("Process_1:1:c5d81aba-fa13-11ed-bb46-a85e455df905");
         logger.info("流程定义：{}" , gson.toJson(processDefinitionMeta));
     }
 
@@ -49,6 +49,16 @@ public class ProcessTest {
         }
     }
 
+    /**
+     * ACT_HI_VARINST
+     * ACT_HI_TASKINST
+     * ACT_HI_PROCINST
+     * ACT_HI_ACTINST
+     *
+     * ACT_RU_EXECUTION
+     * ACT_RU_TASK
+     * ACT_RU_VARIABLE
+     */
     @Test // 启动流程
     @WithUserDetails(value = "admin", userDetailsServiceBeanName = "userDetailsService")
     public void startInstance() {
