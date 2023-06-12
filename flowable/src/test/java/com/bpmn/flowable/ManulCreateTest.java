@@ -2,6 +2,7 @@ package com.bpmn.flowable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.*;
@@ -9,6 +10,7 @@ import org.flowable.bpmn.model.Process;
 import  org.flowable.bpmn.*;
 
 import org.flowable.engine.repository.Deployment;
+import org.flowable.engine.task.Comment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -20,7 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author frodoking
@@ -42,6 +46,7 @@ public class ManulCreateTest {
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 
         RuntimeService runtimeService = processEngine.getRuntimeService();
+        runtimeService.createChangeActivityStateBuilder().moveActivityIdTo("a","b").changeState();
         RepositoryService repositoryService = processEngine.getRepositoryService();
         TaskService taskService = processEngine.getTaskService();
         ManagementService managementService = processEngine.getManagementService();
@@ -126,6 +131,36 @@ public class ManulCreateTest {
 
     }
 
+    @Test
+    public void completeTaskTest() {
+        String taskId = "024766f7-090e-11ee-b32e-8e117451b592";
+        String processInstanceId = "47d54bc6-08f3-11ee-af74-a85e455df905";
+        String message = "Task1完成00000";
+
+        completeTask(taskId, processInstanceId, message);
+    }
+
+    @Test
+    public void rollbackTaskTest() {
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+        RuntimeService runtimeService = processEngine.getRuntimeService();
+        String processInstanceId = "47d54bc6-08f3-11ee-af74-a85e455df905";
+        runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                .moveActivityIdsToSingleActivityId(Lists.list("task2_signal", "task3_signal"),"task1").changeState();
+    }
+
+    private void completeTask(String taskId, String processInstanceId, String message) {
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+        TaskService taskService = processEngine.getTaskService();
+        Comment comment = taskService.addComment(taskId, processInstanceId, message);
+        logger.info("completeTaskTest >> {}", comment);
+        Evection evection = new Evection();
+        evection.setNum(4d);
+        Map<String, Object> map = new HashMap<>();
+        map.put("evection", evection);
+        taskService.complete(taskId, map);
+        logger.info("complete >> {}", taskId);
+    }
 
 
     /**
