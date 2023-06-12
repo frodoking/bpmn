@@ -1,5 +1,6 @@
 package com.bpmn.flowable;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
@@ -149,6 +150,14 @@ public class ManulCreateTest {
                 .moveActivityIdsToSingleActivityId(Lists.list("task2_signal", "task3_signal"),"task1").changeState();
     }
 
+    @Test
+    public void skipTaskTest() {
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+        DynamicBpmnService dynamicBpmnService = processEngine.getDynamicBpmnService();
+        ObjectNode skipNode = dynamicBpmnService.changeSkipExpression("a", "b");
+        dynamicBpmnService.enableSkipExpression(skipNode);
+    }
+
     private void completeTask(String taskId, String processInstanceId, String message) {
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
         TaskService taskService = processEngine.getTaskService();
@@ -195,6 +204,7 @@ public class ManulCreateTest {
         userTask.setAssignee(assignee);
         userTask.setCandidateUsers(candidateUserList);
         userTask.setCandidateGroups(candidateGroupList);
+        userTask.setSkipExpression("${skip}");
 
         return userTask;
     }
