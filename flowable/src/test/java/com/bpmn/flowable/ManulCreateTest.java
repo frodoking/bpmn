@@ -11,6 +11,8 @@ import org.flowable.bpmn.model.Process;
 import  org.flowable.bpmn.*;
 
 import org.flowable.engine.repository.Deployment;
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.task.Comment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +49,6 @@ public class ManulCreateTest {
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 
         RuntimeService runtimeService = processEngine.getRuntimeService();
-        runtimeService.createChangeActivityStateBuilder().moveActivityIdTo("a","b").changeState();
         RepositoryService repositoryService = processEngine.getRepositoryService();
         TaskService taskService = processEngine.getTaskService();
         ManagementService managementService = processEngine.getManagementService();
@@ -113,23 +114,36 @@ public class ManulCreateTest {
         process.addFlowElement(generateSequenceFlow("exclusiveGateway1", "endEvent", "小于3天", "${evection.num<3}"));
         process.addFlowElement(generateSequenceFlow("task5", "endEvent", "", ""));
 
-        new BpmnAutoLayout(bpmnModel).execute();
+        // 部署流程
+        Deployment deploy = repositoryService.createDeployment().addBpmnModel(PROCESSID + ".bpmn20.xml", bpmnModel).name(PROCESSNAME).deploy();
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().deploymentId(deploy.getId()).singleResult();
+
+        logger.info("流程名称：" + processDefinition.getName());
+        logger.info("流程定义ID：" + processDefinition.getId());
+
+        exportBpmn(processDefinition.getId());
+    }
+
+    @Test
+    public void exportBpmnTest() {
+        String processDefinitionId = "flowable-0612-01:1:38b3c121-08d3-11ee-a40b-a85e455df905";
+        exportBpmn(processDefinitionId);
+    }
+
+    public void exportBpmn(String processDefinitionId) {
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+        RepositoryService repositoryService = processEngine.getRepositoryService();
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
 
         BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();
-        File file = new File("E:\\workspaces\\workspace_frodo_opensource\\bpmn\\flowable\\src\\main\\resources\\bpmn\\" + PROCESSID + ".bpmn20.xml");
+        File file = new File("E:\\workspaces\\workspace_frodo_opensource\\bpmn\\flowable\\src\\main\\resources\\bpmn\\" + processDefinitionId.replace(":", "") + ".bpmn20.xml");
 
         try {
             FileUtils.copyInputStreamToFile(new ByteArrayInputStream(bpmnXMLConverter.convertToXML(bpmnModel)), file);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // 部署流程
-        Deployment deploy = repositoryService.createDeployment().addBpmnModel(PROCESSID + ".bpmn20.xml", bpmnModel).name(PROCESSNAME).deploy();
-
-        logger.info("流程名称：" + deploy.getName());
-        logger.info("流程定义ID：" + deploy.getId());
-
     }
 
     @Test
@@ -154,8 +168,11 @@ public class ManulCreateTest {
     public void skipTaskTest() {
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
         DynamicBpmnService dynamicBpmnService = processEngine.getDynamicBpmnService();
-        ObjectNode skipNode = dynamicBpmnService.changeSkipExpression("a", "b");
-        dynamicBpmnService.enableSkipExpression(skipNode);
+
+        String processDefinitionId = "flowable-0612-01:1:38b3c121-08d3-11ee-a40b-a85e455df905";
+        ObjectNode infoNode = dynamicBpmnService.enableSkipExpression();
+        dynamicBpmnService.changeSkipExpression("task5", "${skip}", infoNode);
+        dynamicBpmnService.saveProcessDefinitionInfo(processDefinitionId, infoNode);
     }
 
     private void completeTask(String taskId, String processInstanceId, String message) {
@@ -171,6 +188,29 @@ public class ManulCreateTest {
         logger.info("complete >> {}", taskId);
     }
 
+    /**
+     * 启动流程
+     */
+    @Test
+    public void startTest() {
+        Evection evection = new Evection();
+        evection.setNum(4d);
+        Map<String, Object> map = new HashMap<>();
+        map.put("evection", evection);
+        map.put("me", "me-"+System.nanoTime());
+        map.put("manager", "zsan");
+        map.put("manager2", "lsi");
+        map.put("manager3", "wwu");
+        map.put("manager4", "wer");
+
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+
+        RuntimeService runtimeService = processEngine.getRuntimeService();
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(PROCESSID, map);
+
+        logger.info("流程实例名称：" + processInstance.getName());
+        logger.info("流程定义ID：" + processInstance.getProcessDefinitionId());
+    }
 
     /**
      * 生成开始节点
