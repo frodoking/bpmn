@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    host: bj-cynosdbmysql-grp-5dvrc4s6.sql.tencentcdb.com
+    port: 28168
+    name: bpmn_camunda
+    username: root
+    password: Asd@1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 30
+      auto-commit: true
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+camunda.bpm:
+  # 流程引擎name
+  process-engine-name: camundaEngine
+  # 历史级别
+  history-level: full
+  # 是否自动部署
+  auto-deployment-enabled: false
+  id-generator: strong
+  deployment-resource-pattern:
+    - classpath:processes/*.bpmn20.xml
+  job-execution:
+    enabled: true
+  database:
+    type: mysql
+    jdbc-batch-processing: true
+  authorization:
+    enabled: false
+  admin-user:
+    id: admin
+    password: password
+
+logging:
+  level:
+    org.flowable: DEBUG

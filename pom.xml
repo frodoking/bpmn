@@ -16,6 +16,7 @@
     <modules>
         <module>flowable</module>
         <module>activiti7</module>
+        <module>camunda</module>
     </modules>
 
     <properties>
@@ -52,6 +53,7 @@
             <id>activiti-releases</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/activiti-releases</url>
         </repository>
+
     </repositories>
 
 </project>
