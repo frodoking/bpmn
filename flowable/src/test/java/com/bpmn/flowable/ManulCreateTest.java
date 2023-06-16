@@ -2,10 +2,14 @@ package com.bpmn.flowable;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.assertj.core.util.Lists;
+import org.flowable.common.engine.api.delegate.event.FlowableEntityEvent;
+import org.flowable.common.engine.api.delegate.event.FlowableEvent;
+import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.*;
 import org.flowable.engine.impl.dynamic.DynamicUserTaskBuilder;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.task.Comment;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -32,6 +36,33 @@ public class ManulCreateTest {
     private static final String PROCESSID = "flowable-0615-01";
     private static final String PROCESSNAME = "出差申请单-动态生成-0615-01";
 
+    @Before
+    public void setUp() {
+        ProcessEngines.getDefaultProcessEngine().getProcessEngineConfiguration().getEventDispatcher().addEventListener(new FlowableEventListener() {
+            @Override
+            public void onEvent(FlowableEvent flowableEvent) {
+                if (flowableEvent instanceof FlowableEntityEvent) {
+                    logger.info("onEvent >> {}, {}",flowableEvent.getType(), ((FlowableEntityEvent) flowableEvent).getEntity());
+                }
+            }
+
+            @Override
+            public boolean isFailOnException() {
+                return false;
+            }
+
+            @Override
+            public boolean isFireOnTransactionLifecycleEvent() {
+                return false;
+            }
+
+            @Override
+            public String getOnTransaction() {
+                return null;
+            }
+        });
+    }
+
     @Test
     public void createBpmnTest() {
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
@@ -56,8 +87,8 @@ public class ManulCreateTest {
 
     @Test
     public void completeTaskTest() {
-        String taskId = "024766f7-090e-11ee-b32e-8e117451b592";
-        String processInstanceId = "47d54bc6-08f3-11ee-af74-a85e455df905";
+        String taskId = "130cc7ae-0bfd-11ee-bcd1-a85e455df905";
+        String processInstanceId = "6e9d3581-0bfa-11ee-83d5-a85e455df905";
         String message = "Task1完成00000";
 
         completeTask(taskId, processInstanceId, message);
