@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StopWatch;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -33,8 +34,8 @@ public class ManulCreateTest {
 
     private final Logger logger = LoggerFactory.getLogger(ManulCreateTest.class);
 
-    private static final String PROCESSID = "flowable-0615-01";
-    private static final String PROCESSNAME = "出差申请单-动态生成-0615-01";
+    private static final String PROCESSID = "flowable-0619";
+    private static final String PROCESSNAME = "出差申请单-动态生成-0619";
 
     @Before
     public void setUp() {
@@ -42,7 +43,9 @@ public class ManulCreateTest {
             @Override
             public void onEvent(FlowableEvent flowableEvent) {
                 if (flowableEvent instanceof FlowableEntityEvent) {
-                    logger.info("onEvent >> {}, {}",flowableEvent.getType(), ((FlowableEntityEvent) flowableEvent).getEntity());
+                    if (flowableEvent.getType().name().contains("TASK")) {
+                        logger.info("onEvent >> {}, {}", flowableEvent.getType(), ((FlowableEntityEvent) flowableEvent).getEntity());
+                    }
                 }
             }
 
@@ -76,7 +79,7 @@ public class ManulCreateTest {
         FormService formService = processEngine.getFormService();
         DynamicBpmnService dynamicBpmnService = processEngine.getDynamicBpmnService();
 
-        new BPMNBuilder().buildSimple(PROCESSID, PROCESSNAME);
+        new BPMNBuilder().buildMultiInstance(PROCESSID, PROCESSNAME);
     }
 
     @Test
@@ -87,8 +90,8 @@ public class ManulCreateTest {
 
     @Test
     public void completeTaskTest() {
-        String taskId = "130cc7ae-0bfd-11ee-bcd1-a85e455df905";
-        String processInstanceId = "6e9d3581-0bfa-11ee-83d5-a85e455df905";
+        String taskId = "28595701-0e50-11ee-83f2-a85e455df905";
+        String processInstanceId = "2854ea06-0e50-11ee-83f2-a85e455df905";
         String message = "Task1完成00000";
 
         completeTask(taskId, processInstanceId, message);
@@ -112,6 +115,13 @@ public class ManulCreateTest {
         ObjectNode infoNode = dynamicBpmnService.enableSkipExpression();
         dynamicBpmnService.changeSkipExpression("task5", "${skip}", infoNode);
         dynamicBpmnService.saveProcessDefinitionInfo(processDefinitionId, infoNode);
+    }
+
+    @Test
+    public void executeJobTest() {
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+        ManagementService managementService = processEngine.getManagementService();
+        managementService.executeJob("c1afa4a6-0e50-11ee-8538-a85e455df905");
     }
 
     @Test
@@ -157,6 +167,8 @@ public class ManulCreateTest {
         map.put("manager2", "lsi");
         map.put("manager3", "wwu");
         map.put("manager4", "wer");
+        map.put("skip", false);
+        map.put("userList", Arrays.asList("张三","李四","王二狗","赵天"));
 
         ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
 

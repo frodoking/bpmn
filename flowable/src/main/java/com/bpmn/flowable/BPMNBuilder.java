@@ -10,6 +10,9 @@ import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.validation.ProcessValidator;
+import org.flowable.validation.ProcessValidatorFactory;
+import org.flowable.validation.ValidationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -138,6 +141,75 @@ public class BPMNBuilder {
         return processDefinition.getId();
     }
 
+    /**
+     * MultiInstanceActivityBehavior
+     */
+    public String buildMultiInstance(String id, String name) {
+        ProcessEngine processEngine = ProcessEngines.getDefaultProcessEngine();
+
+        RepositoryService repositoryService = processEngine.getRepositoryService();
+        BpmnModel bpmnModel = new BpmnModel();
+        bpmnModel.setTargetNamespace("http://activiti.org/test");
+        Process process = new Process();
+        bpmnModel.addProcess(process);
+        process.setId(id);
+        process.setName(name);
+
+        // 添加开始节点
+        process.addFlowElement(generateStartEvent());
+        // 添加用户节点
+        UserTask userTask = generateUserTask("task1", "填写申请单", "${me}", "robot01", "activitiTeam");
+        userTask.setAssignee("${user}");
+        MultiInstanceLoopCharacteristics loopCharacteristics = new MultiInstanceLoopCharacteristics();
+        loopCharacteristics.setSequential(false);
+        loopCharacteristics.setInputDataItem("${userList}");
+        loopCharacteristics.setElementVariable("user");
+        loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances/nrOfInstances >= 1}");
+        loopCharacteristics.setLoopCardinality("3");
+        userTask.setLoopCharacteristics(loopCharacteristics);
+        process.addFlowElement(userTask);
+        process.addFlowElement(generateUserTask("task2", "技术经理", "${manager}", "robot02", ""));
+        process.addFlowElement(generateUserTask("task3", "人事经理", "${manager2}", "robot03", ""));
+        // 添加结束节点
+        process.addFlowElement(generateEndEvent());
+
+        // 设置连接线
+        process.addFlowElement(generateSequenceFlow("startEvent", "task1", "", ""));
+        process.addFlowElement(generateSequenceFlow("task1", "task2", "", ""));
+        process.addFlowElement(generateSequenceFlow("task2", "task3", "", ""));
+        process.addFlowElement(generateSequenceFlow("task3", "endEvent", "", ""));
+
+        ProcessValidator processValidator=new ProcessValidatorFactory().createDefaultProcessValidator();
+        List<ValidationError> validationErrorList=processValidator.validate(bpmnModel);
+        if (validationErrorList.size()>0){
+            throw new RuntimeException("流程有误，请检查后重试");
+        }
+
+        validateBpmn(bpmnModel);
+
+        // 部署流程
+        Deployment deploy = repositoryService.createDeployment().addBpmnModel(id + ".bpmn20.xml", bpmnModel).name(name).deploy();
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().deploymentId(deploy.getId()).singleResult();
+
+        logger.info("流程名称：" + processDefinition.getName());
+        logger.info("流程定义ID：" + processDefinition.getId());
+
+        exportBpmn(processDefinition.getId());
+        return processDefinition.getId();
+    }
+
+    /**
+     * 校验bpmModel
+     */
+    private void validateBpmn(BpmnModel bpmnModel) {
+        //校验bpmModel
+        ProcessValidator processValidator=new ProcessValidatorFactory().createDefaultProcessValidator();
+        List<ValidationError> validationErrorList=processValidator.validate(bpmnModel);
+        if (validationErrorList.size()>0){
+            throw new RuntimeException("流程有误，请检查后重试");
+        }
+    }
 
     /**
      * 生成开始节点
